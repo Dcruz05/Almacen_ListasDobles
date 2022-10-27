@@ -4,23 +4,45 @@ class Almacen{
         this.ultimo=null;
     }
     agregar(nuevo){
+        if(this.buscar(nuevo.codigo)!=null){
+            return false;
+        }
         if(!this.primero){
             this.primero = nuevo
+            this.ultimo = nuevo
         }else{
-            let aux = this.primero
-            while(aux.siguiente!=null){
-                aux = aux.siguiente;
+            if(nuevo.codigo<this.primero.codigo){
+                this.agregarPrimero(nuevo);
+            }else if(nuevo.codigo>this.ultimo.codigo){
+                this.agregarUltimo(nuevo);
+            }else{
+                let aux = this.primero
+                while(aux.siguiente.codigo<nuevo.codigo){
+                    aux = aux.siguiente;
+                }
+                nuevo.siguiente = aux.siguiente;
+                nuevo.anterior=aux
+                aux.siguiente.anterior=nuevo
+                aux.siguiente = nuevo
             }
-            nuevo.anterior = aux
-            aux.siguiente = nuevo
-            this.ultimo = aux.siguiente
         }
+        return true;
+    }
+    agregarPrimero(nuevo){
+        this.primero.anterior=nuevo
+        nuevo.siguiente=this.primero;
+        this.primero=nuevo;
+    }
+    agregarUltimo(nuevo){
+        this.ultimo.siguiente=nuevo;
+        nuevo.anterior=this.ultimo;
+        this.ultimo=nuevo;
     }
     listar(){
         let aux = this.primero;
         let lista = ""
         while(aux){
-            lista += `${aux.codigo} `;
+            lista += `${aux.infoHTML()} `;
             aux= aux.siguiente;
         }
         return lista
@@ -29,7 +51,7 @@ class Almacen{
         let aux = this.ultimo;
         let lista = ""
         while(aux){
-            lista += `${aux.codigo} `
+            lista += `${aux.infoHTML()} `
             aux= aux.anterior;
         }
         return lista
@@ -52,23 +74,29 @@ class Almacen{
             return null;
         }
     }
+
     eliminar(codigo){
+        if(this.buscar(codigo)==null){
+            return false
+        }
         let aux=this.primero
-        if(aux.codigo==codigo){
+        if(this.primero.codigo==codigo){
             this.primero = aux.siguiente
+            if(this.primero.anterior){
+                this.primero.anterior=null;
+            }
+            return true;
+        }else if(this.ultimo.codigo==codigo){
+            this.ultimo.anterior.siguiente=null
+            this.ultimo=this.ultimo.anterior
             return true;
         }else{
-            let siguiente = null;
-            while(aux.siguiente!=null){
-                siguiente= aux.siguiente;
-                if(siguiente.codigo==codigo){
-                    aux.siguiente=aux.siguiente.siguiente
-                    return true;
-                }else{
-                    aux=aux.siguiente;
-                }
+            while(aux.siguiente.codigo!=codigo){
+                aux=aux.siguiente
             }
-            return false;
+            aux.siguiente=aux.siguiente.siguiente
+            aux.siguiente.anterior=aux
+            return true;
         }
     }
 }
